@@ -28,5 +28,10 @@ COPY . /app/
 # Make sure you have your Django settings properly configured for static files.
 # RUN python manage.py collectstatic --noinput
 
+EXPOSE 8000
+
+# migrations
+CMD ["python", "manage.py", "migrate"]
+
 # Command to run the Django development server
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
