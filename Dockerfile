@@ -1,5 +1,8 @@
 # Use the official Python image with your desired version
-FROM python:3.11-slim
+FROM python:3.11
+
+ARG DOPPLER_TOKEN
+ENV DOPPLER_TOKEN=$DOPPLER_TOKEN
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -11,15 +14,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Install doppler
+RUN apt-get install -y apt-transport-https ca-certificates curl gnupg && \
+    curl -sLf --retry 3 --tlsv1.2 --proto "=https" 'https://packages.doppler.com/public/cli/gpg.DE2A7741A397C129.key' | gpg --dearmor -o /usr/share/keyrings/doppler-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/doppler-archive-keyring.gpg] https://packages.doppler.com/public/cli/deb/debian any-version main" | tee /etc/apt/sources.list.d/doppler-cli.list && \
+    apt-get update && \
+    apt-get -y install doppler
+
+RUN mkdir /app
+
+COPY pyproject.toml poetry.lock /app/
+
 # Set the working directory in the container
 WORKDIR /app
-
-# Copy the Python dependencies file to the container
-COPY requirements.txt /app/
-
-# Install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install poetry && \
+    poetry config virtualenvs.create false && \
+    poetry install --no-dev --no-interaction --no-ansi
 
 # Copy the rest of the application code
 COPY . /app/
@@ -30,8 +41,11 @@ COPY . /app/
 
 EXPOSE 8000
 
-# migrations
-CMD ["python", "manage.py", "migrate"]
+RUN chmod +x ./start.sh
 
-# Command to run the Django development server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT ["./start.sh"]
+
+# Run migrations
+CMD ["poetry", "run", "python", "manage.py", "migrate"]
+# Run server
+CMD ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
