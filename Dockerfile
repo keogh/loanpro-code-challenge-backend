@@ -43,7 +43,7 @@ EXPOSE 8000
 
 RUN chmod +x ./start.sh
 
-ENTRYPOINT ["./start.sh"]
+#ENTRYPOINT ["./start.sh"]
 
 # Run migrations
 CMD ["poetry", "run", "python", "manage.py", "migrate"]
