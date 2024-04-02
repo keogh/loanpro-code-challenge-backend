@@ -47,12 +47,15 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-    'codechallenge.authentication.middleware.jwt_authentication_middleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+
+    # request.user is set in django.contrib.auth.middleware.AuthenticationMiddleware
+    # But it's also set in jwt auth so my middleware comes after
+    'codechallenge.authentication.middleware.jwt_authentication_middleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
