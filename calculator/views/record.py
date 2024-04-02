@@ -72,8 +72,35 @@ class RecordViews:
             except ObjectDoesNotExist:
                 return JsonResponse({'success': False, 'error': 'Operation not found'}, status=404)
 
-            operation_response = 1 # Calculate base on operation type
+            try:
+                operator1 = int(data.get('operator1'))
+                operator2 = int(data.get('operator2'))
+            except ValueError:
+                return JsonResponse({'error': 'both operators must integer numbers'}, status=400)
 
+            OPERATIONS_WITH_TWO_OPERATORS = [
+                'addition', 'subtraction', 'multiplication', 'division'
+            ]
+            if not operator1:
+                return JsonResponse({'success': False, 'error': 'Missing operator1'}, status=400)
+            if operation.type in OPERATIONS_WITH_TWO_OPERATORS and not operator2:
+                return JsonResponse({'success': False, 'error': 'Missing operator2'}, status=400)
+
+            if operation.type == 'addition':
+                operation_response = operator1 + operator2
+            elif operation.type == 'subtraction':
+                operation_response = operator1 - operator2
+            elif operation.type == 'multiplication':
+                operation_response = operator1 * operator2
+            elif operation.type == 'division':
+                operation_response = operator1 / operator2
+            elif operation.type == 'square_root':
+                operation_response = operator1 ** 0.5
+            elif operation.type == 'random_string':
+                # TODO: Connect to service for random string
+                operation_response = 'hola'
+            else:
+                return JsonResponse({'success': False, 'error': 'Invalid Operation'}, status=400)
 
             record = Record.objects.create(
                 user=request.user,
