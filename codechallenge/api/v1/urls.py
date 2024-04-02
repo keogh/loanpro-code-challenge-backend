@@ -1,6 +1,6 @@
 from django.urls import path, include
 from codechallenge.views.auth import AuthViews
-from codechallenge.views.record import RecordViews
+from calculator.views import RecordViews
 
 urlpatterns = [
     path('sign-in', AuthViews.sign_in, name='sign-in'),
