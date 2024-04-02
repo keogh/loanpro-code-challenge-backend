@@ -2,6 +2,9 @@ import jwt
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def jwt_authentication_middleware(get_response):
@@ -15,7 +18,11 @@ def jwt_authentication_middleware(get_response):
                 try:
                     payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
                     user = get_user_model().objects.get(id=payload['id'])
+                    if user is None:
+                        return JsonResponse({'error': 'User not found'}, status=404)
                     request.user = user
+                    logger.debug(
+                        f'Handling request for path: {request.path}, User ID: {getattr(request.user, "id", "Anonymous")}')
                 except (jwt.ExpiredSignatureError, jwt.DecodeError, get_user_model().DoesNotExist):
                     return JsonResponse({'error': 'Invalid or expired token'}, status=403)
             else:

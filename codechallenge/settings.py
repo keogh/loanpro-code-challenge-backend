@@ -139,3 +139,26 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'https://yourproductionfrontend.com',
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+        # 'file': {
+        #     'level': 'DEBUG',
+        #     'class': 'logging.FileHandler',
+        #     'filename': 'django_debug.log',
+        # },
+    },
+    'loggers': {
+        '': {  # root logger
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

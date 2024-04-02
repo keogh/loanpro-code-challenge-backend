@@ -22,7 +22,7 @@ class AuthViews:
                 payload = {
                     'id': user.id,
                     'username': user.username,
-                    'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=1),  # Token expires in 1 hour
+                    'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=36),  # Token expires in 1 hour
                 }
                 # Encode JWT token
                 token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
