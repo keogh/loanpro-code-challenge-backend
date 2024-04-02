@@ -18,7 +18,6 @@ class AuthViews:
             user = authenticate(username=username, password=password)
 
             if user is not None:
-                # Define JWT payload
                 payload = {
                     'id': user.id,
                     'username': user.username,
