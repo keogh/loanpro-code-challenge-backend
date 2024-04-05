@@ -52,9 +52,12 @@ class RecordViews:
 
         return JsonResponse({
             'success': True,
-            'page': page,
-            'per_page': per_page,
-            'total_pages': paginator.num_pages,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total_pages': paginator.num_pages,
+                'total_items': paginator.count,
+            },
             'records': records_data
         })
 
