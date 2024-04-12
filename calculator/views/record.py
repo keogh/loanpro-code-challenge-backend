@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from calculator.models import Record, Operation
+from calculator.utils import get_random_string
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
@@ -100,8 +101,12 @@ class RecordViews:
             elif operation.type == 'square_root':
                 operation_response = operator1 ** 0.5
             elif operation.type == 'random_string':
-                # TODO: Connect to service for random string
-                operation_response = 'hola'
+                operation_response = get_random_string(operator1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
+                if operation_response is None:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Oops. Something went wrong in the Random.org external service.'
+                    }, status=503)
             else:
                 return JsonResponse({'success': False, 'error': 'Invalid Operation'}, status=400)
 

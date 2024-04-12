@@ -27,6 +27,8 @@ environ.Env.read_env(env_file='.env')
 
 SECRET_KEY = env('DJANGO_SECRET_KEY')
 
+RANDOM_ORG_API_KEY = env('RANDOM_ORG_API_KEY')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
