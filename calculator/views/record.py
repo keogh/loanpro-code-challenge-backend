@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.http import JsonResponse
 from calculator.models import Record, Operation
 from calculator.utils import get_random_string
@@ -7,6 +8,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import logging
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +92,20 @@ class RecordViews:
             if operation.type in OPERATIONS_WITH_TWO_OPERATORS and not operator2:
                 return JsonResponse({'success': False, 'error': 'Missing operator2'}, status=400)
 
+            profile = request.user.userprofile
+            try:
+                new_user_balance = profile.balance - operation.cost
+            except AttributeError:
+                new_user_balance = 0  # Default balance if UserProfile does not exist
+            except User.userprofile.RelatedObjectDoesNotExist:
+                new_user_balance = 0  # Handle the case where the userprofile is not created
+
+            if new_user_balance < 0:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Request denied. Insufficient balance for this operation'
+                }, status=403)
+
             if operation.type == 'addition':
                 operation_response = operator1 + operator2
             elif operation.type == 'subtraction':
@@ -110,15 +126,30 @@ class RecordViews:
             else:
                 return JsonResponse({'success': False, 'error': 'Invalid Operation'}, status=400)
 
-            record = Record.objects.create(
-                user=request.user,
-                operation=operation,
-                amount=operation.cost,
-                user_balance=0,
-                operation_response=operation_response,
-            )
+            try:
+                with transaction.atomic():
+                    profile.balance = new_user_balance
+                    profile.save()
 
-            return JsonResponse({'success': True, 'record_id': record.id}, status=201)
+                    record = Record.objects.create(
+                        user=request.user,
+                        operation=operation,
+                        amount=operation.cost,
+                        user_balance=new_user_balance,
+                        operation_response=operation_response,
+                    )
+
+            except Exception as e:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Something went wrong while saving. {e}'
+                }, status=500)
+
+            return JsonResponse({
+                'success': True,
+                'record_id': record.id,
+                'user_balance': new_user_balance
+            }, status=201)
 
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
