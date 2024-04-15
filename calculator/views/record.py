@@ -29,7 +29,13 @@ class RecordViews:
 
     @classmethod
     def list(cls, request):
-        records_list = Record.objects.filter(user=request.user)
+        search_query = request.GET.get('search', '')
+
+        records_list = Record.objects.filter(
+            user=request.user,
+            operation__type__icontains=search_query
+        )
+
         page = request.GET.get('page', 1)
         per_page = request.GET.get('per_page', 10)
         paginator = Paginator(records_list, per_page)  # Show 10 records per page
