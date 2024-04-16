@@ -31,10 +31,20 @@ class RecordViews:
     def list(cls, request):
         search_query = request.GET.get('search', '')
 
+        sort_by = request.GET.get('sort_by', 'id').strip()
+        direction = request.GET.get('direction', 'desc').strip()
+        valid_sort_columns = ['id', 'amount', 'user_balance', 'created_at']
+        sort_prefix = '' if direction == 'ASC' else '-'
+
+        if sort_by not in valid_sort_columns:
+            sort_by = 'id'
+
+        order_by = f'{sort_prefix}{sort_by}'
+
         records_list = Record.objects.filter(
             user=request.user,
             operation__type__icontains=search_query
-        )
+        ).order_by(order_by)
 
         page = request.GET.get('page', 1)
         per_page = request.GET.get('per_page', 10)
