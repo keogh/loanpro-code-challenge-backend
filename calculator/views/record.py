@@ -46,7 +46,7 @@ class RecordViews:
         sort_by = request.GET.get('sort_by', 'id').strip()
         direction = request.GET.get('direction', 'desc').strip()
         valid_sort_columns = ['id', 'amount', 'user_balance', 'created_at']
-        sort_prefix = '' if direction == 'ASC' else '-'
+        sort_prefix = '' if direction.lower() == 'asc' else '-'
 
         if sort_by not in valid_sort_columns:
             sort_by = 'id'
@@ -95,6 +95,11 @@ class RecordViews:
 
     @classmethod
     def create(cls, request):
+        # TODO: Make this method thinner by moving code sections into its own methods:
+        #       - Validate input
+        #       - calculate balance
+        #       - Perform operation
+        #       - Save in database
         try:
             data = json.loads(request.body)
             operation_id = data.get('operation_id')
@@ -190,7 +195,11 @@ class RecordViews:
     def delete(cls, request, record_id):
         with transaction.atomic():
             try:
-                record = Record.objects.select_for_update().get(pk=record_id, deleted_at__isnull=True)
+                record = Record.objects.select_for_update().get(
+                    pk=record_id,
+                    user=request.user,
+                    deleted_at__isnull=True
+                )
                 record.deleted_at = timezone.now()
                 record.save()
 
@@ -212,7 +221,10 @@ class RecordViews:
                 user_profile.balance += amount_to_read
                 user_profile.save()
 
-                return JsonResponse({'success': True, 'message': 'Record deleted successfully, user balances records updated'})
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Record deleted successfully, user balances records updated'
+                })
 
             except Record.DoesNotExist:
                 return JsonResponse({'success': False, 'error': 'Record not found'}, status=404)
