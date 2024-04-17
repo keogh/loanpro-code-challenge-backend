@@ -9,5 +9,5 @@ urlpatterns = [
     path('operations', OperationViews.plural_endpoint, name='Operation plural actions'),
 
     path('records', RecordViews.plural_endpoint, name='Record plural actions'),
-    # path('records/<record_id>'),
+    path('records/<record_id>', RecordViews.singular_endpoint, name='Record singular actions'),
 ]

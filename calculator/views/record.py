@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 import logging
 from django.db import transaction
@@ -28,6 +29,17 @@ class RecordViews:
             }, status=405)
 
     @classmethod
+    @method_decorator(csrf_exempt)
+    def singular_endpoint(cls, request, record_id):
+        if request.method == 'DELETE':
+            return cls.delete(request, record_id)
+        else:
+            return JsonResponse({
+                'success': False,
+                'errors': ['Method not Allowed']
+            }, status=405)
+
+    @classmethod
     def list(cls, request):
         search_query = request.GET.get('search', '')
 
@@ -42,6 +54,7 @@ class RecordViews:
         order_by = f'{sort_prefix}{sort_by}'
 
         records_list = Record.objects.filter(
+            deleted_at__isnull=True,
             user=request.user,
             operation__type__icontains=search_query
         ).order_by(order_by)
@@ -112,9 +125,9 @@ class RecordViews:
             try:
                 new_user_balance = profile.balance - operation.cost
             except AttributeError:
-                new_user_balance = 0  # Default balance if UserProfile does not exist
+                new_user_balance = -1  # Default balance if UserProfile does not exist
             except User.userprofile.RelatedObjectDoesNotExist:
-                new_user_balance = 0  # Handle the case where the userprofile is not created
+                new_user_balance = -1  # Handle the case where the userprofile is not created
 
             if new_user_balance < 0:
                 return JsonResponse({
@@ -172,3 +185,36 @@ class RecordViews:
 
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+    @classmethod
+    def delete(cls, request, record_id):
+        with transaction.atomic():
+            try:
+                record = Record.objects.select_for_update().get(pk=record_id, deleted_at__isnull=True)
+                record.deleted_at = timezone.now()
+                record.save()
+
+                # Fetch all subsequent records for the same user created after the soft-deleted record
+                subsequent_records = Record.objects.filter(
+                    user=request.user,
+                    created_at__gt=record.created_at,
+                    deleted_at__isnull=True
+                ).select_for_update()  # Lock these records
+
+                # Update user_balance for subsequent records
+                amount_to_read = record.amount
+                for subsequent_record in subsequent_records:
+                    subsequent_record.user_balance += amount_to_read
+                    subsequent_record.save()
+
+                # Update user's UserProfile balance
+                user_profile = request.user.userprofile
+                user_profile.balance += amount_to_read
+                user_profile.save()
+
+                return JsonResponse({'success': True, 'message': 'Record deleted successfully, user balances records updated'})
+
+            except Record.DoesNotExist:
+                return JsonResponse({'success': False, 'error': 'Record not found'}, status=404)
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)}, status=500)
