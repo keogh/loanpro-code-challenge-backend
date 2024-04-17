@@ -1,5 +1,6 @@
 from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import User
+from django.utils import timezone
 from calculator.models import Record, Operation
 from calculator.views import RecordViews
 import json
@@ -18,7 +19,7 @@ class RecordListTest(TestCase):
                 amount=100 + i,
                 user_balance=1000 - i,
                 operation_response=random.randint(1, 100),
-                created_at='2024-04-01 00:00:00'
+                created_at=timezone.now()
             )
 
     def test_list_no_params(self):
@@ -62,7 +63,7 @@ class RecordListTest(TestCase):
             amount=777,
             user_balance=777,
             operation_response=23,
-            created_at='2024-04-01 00:00:00'
+            created_at=timezone.now()
         )
         request = self.factory.get('/fake-url?search=specific')
         request.user = self.user
