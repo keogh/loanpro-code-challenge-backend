@@ -60,8 +60,8 @@ class RecordViews:
         ).order_by(order_by)
 
         page = request.GET.get('page', 1)
-        per_page = request.GET.get('per_page', 10)
-        paginator = Paginator(records_list, per_page)  # Show 10 records per page
+        per_page = request.GET.get('per_page', 100)
+        paginator = Paginator(records_list, per_page)  # Show 100 records per page
 
         try:
             records = paginator.page(page)
