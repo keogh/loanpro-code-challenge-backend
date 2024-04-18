@@ -74,7 +74,7 @@ class RecordViews:
         records_data = [{
             'id': record.id,
             'operation_id': record.operation.id,
-            'operation_type': record.operation.type,
+            'operation_type': record.operation.name,
             'user_id': record.user.id,
             'amount': record.amount,
             'user_balance': record.user_balance,
