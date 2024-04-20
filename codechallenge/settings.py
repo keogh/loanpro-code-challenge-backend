@@ -152,6 +152,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'https://yourproductionfrontend.com',
+    'https://keogh.github.io/',
+    'https://loanpro-django-api.apps.bitacoraml.com'
 ]
 
 LOGGING = {
