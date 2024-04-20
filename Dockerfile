@@ -60,11 +60,11 @@ COPY . /app/
 
 EXPOSE 8000
 
-#RUN chmod +x ./start.sh
-#
-#ENTRYPOINT ["./start.sh"]
+RUN chmod +x ./start.sh
+
+ENTRYPOINT ["./start.sh"]
 
 # Run migrations
-CMD ["poetry", "run", "python", "manage.py", "migrate"]
+#CMD ["poetry", "run", "python", "manage.py", "migrate"]
 # Run server
-CMD ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+#CMD ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
