@@ -114,7 +114,9 @@ class RecordViews:
 
             try:
                 operator1 = int(data.get('operator1'))
-                operator2 = int(data.get('operator2'))
+                operator2 = data.get('operator2')
+                if operator2 is not None and len(operator2) is not 0:
+                    operator2 = int(data.get('operator2'))
             except ValueError:
                 return JsonResponse({'error': 'both operators must integer numbers'}, status=400)
 
