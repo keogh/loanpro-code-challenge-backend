@@ -93,7 +93,7 @@ WSGI_APPLICATION = 'codechallenge.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': env('DB_ENGINE'),
         'NAME': env('DB_NAME'),
         'USER': env('DB_USER'),
         'PASSWORD': env('DB_PASSWORD'),
@@ -151,9 +151,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS_ALLOW_ALL_ORIGINS = True  # Not recommended for production
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'https://yourproductionfrontend.com',
-    'https://keogh.github.io',
-    'https://loanpro-django-api.apps.bitacoraml.com'
+    # 'https://yourproductionfrontend.com',
+    # 'https://keogh.github.io',
+    'https://loanpro-django-api.apps.bitacoraml.com',
+    'https://loanprochallenge.netlify.app',
 ]
 
 LOGGING = {
