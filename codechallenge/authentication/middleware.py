@@ -4,6 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 import logging
+from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,9 @@ def jwt_authentication_middleware(get_response):
     def middleware(request):
         if not any(request.path.startswith(path) for path in EXCLUDE_PATHS):
             token = request.headers.get('Authorization')
+            if cache.get(token) == 'blocklisted':
+                return JsonResponse({'error': 'Invalid token'}, status=403)
+
             if token:
                 try:
                     payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])

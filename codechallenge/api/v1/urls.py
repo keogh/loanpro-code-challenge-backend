@@ -5,6 +5,7 @@ from calculator.views import RecordViews
 
 urlpatterns = [
     path('sign-in', AuthViews.sign_in, name='sign-in'),
+    path('sign-out', AuthViews.sign_out, name='sign-out'),
 
     path('operations', OperationViews.plural_endpoint, name='Operation plural actions'),
 

@@ -143,6 +143,16 @@ Response:
 }
 ```
 
+### Sign-out
+`POST /api/v1/sign-out`
+
+Set the token to a blocklist so it cannot be used.
+
+Response:
+```json
+{"message": "Signed out successfully"}
+```
+
 ### List Records
 `GET /api/v1/records`
 
