@@ -12,11 +12,11 @@ def jwt_authentication_middleware(get_response):
     # Paths to exclude from token validation, TODO: Make them regular expresions
     EXCLUDE_PATHS = [
         '/api/v1/sign-in',
-        '/admin'
+        '/admin',
     ]
 
     def middleware(request):
-        if request.path not in EXCLUDE_PATHS:
+        if not any(request.path.startswith(path) for path in EXCLUDE_PATHS):
             token = request.headers.get('Authorization')
             if token:
                 try:
